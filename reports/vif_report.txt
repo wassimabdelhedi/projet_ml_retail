@@ -1,0 +1,73 @@
+RAPPORT VIF (MAX RECOMMANDE = 10)
+========================================
+                     feature          VIF
+      Region_Europe de l'Est          inf
+                Region_Autre          inf
+       Region_Europe du Nord          inf
+              Region_Océanie          inf
+         Region_Moyen-Orient          inf
+        Region_Europe du Sud          inf
+     Region_Amérique du Nord          inf
+      Region_Amérique du Sud          inf
+                 Region_Asie          inf
+              Region_Afrique          inf
+        FavoriteSeason_Hiver          inf
+    FavoriteSeason_Printemps          inf
+  Region_Europe continentale          inf
+      Region_Europe centrale          inf
+                    Gender_F          inf
+                    Gender_M          inf
+              Gender_Unknown          inf
+        AccountStatus_Active          inf
+                   Region_UK          inf
+     AccountStatus_Suspended          inf
+       AccountStatus_Pending          inf
+        AccountStatus_Closed          inf
+          FavoriteSeason_Été          inf
+      FavoriteSeason_Automne          inf
+          CustomerTenureDays 1.017992e+05
+        FirstPurchaseDaysAgo 8.085260e+04
+                     Recency 5.872331e+04
+   WeekendPreference_Inconnu 2.854455e+01
+        WeekendPurchaseRatio 1.355684e+01
+    CustomerType_Occasionnel 1.242548e+01
+   WeekendPreference_Semaine 1.236604e+01
+       CustomerType_Régulier 1.109285e+01
+     CustomerType_Hyperactif 1.055389e+01
+        CustomerType_Nouveau 7.152489e+00
+                   Frequency 5.201258e+00
+            SpendingCategory 4.185445e+00
+                 TenureRatio 4.169234e+00
+           ChurnRiskCategory 3.889215e+00
+              AvgBasketValue 3.840715e+00
+              UniqueProducts 3.792314e+00
+               MonetaryTotal 3.066663e+00
+             Country_encoded 2.832644e+00
+   AvgProductsPerTransaction 2.709858e+00
+                     RegYear 2.672762e+00
+ProductDiversity_Explorateur 2.283189e+00
+       NegativeQuantityCount 2.264494e+00
+              PreferredMonth 1.993380e+00
+          PreferredDayOfWeek 1.860980e+00
+          BasketSizeCategory 1.795575e+00
+                  RFMSegment 1.697548e+00
+                 MonetaryAvg 1.602216e+00
+                    RegMonth 1.574472e+00
+                         Age 1.569650e+00
+                 AgeCategory 1.565115e+00
+ ProductDiversity_Spécialisé 1.491691e+00
+                LoyaltyLevel 1.484446e+00
+                 ReturnRatio 1.428581e+00
+     AvgDaysBetweenPurchases 1.369984e+00
+              ZeroPriceCount 1.291438e+00
+                 IsPrivateIP 1.188556e+00
+                IPFirstOctet 1.186870e+00
+               PreferredHour 1.155834e+00
+   AvgQuantityPerTransaction 1.111154e+00
+          PreferredTimeOfDay 1.107666e+00
+             UniqueCountries 1.090330e+00
+                      RegDay 1.031999e+00
+                 MonetaryStd 1.021845e+00
+                  RegWeekday 1.019386e+00
+           SatisfactionScore 1.013632e+00
+         SupportTicketsCount 1.013456e+00
