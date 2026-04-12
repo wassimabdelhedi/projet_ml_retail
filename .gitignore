@@ -40,13 +40,9 @@ venv.bak/
 
 # Jupyter Notebook
 .ipynb_checkpoints
-*.ipynb
 
-# Models & Data (optionnel)
-models/*.joblib
-data/raw/*.csv
-data/processed/*.csv
-data/train_test/*.csv
+
+
 
 # Flask
 instance/
