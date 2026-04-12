@@ -81,7 +81,7 @@ projet_ml_retail/
 
 1. **Clonage du projet**
    ```bash
-   git clone https://github.com/votre-utilisateur/projet_ml_retail.git
+   git clone https://github.com/wassimabdelhedi/projet_ml_retail
    cd projet_ml_retail
    ```
 
