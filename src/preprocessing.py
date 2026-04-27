@@ -1,15 +1,16 @@
 
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import StandardScaler
-from sklearn.impute import KNNImputer
-from sklearn.model_selection import train_test_split
 import ipaddress
 import os
 import joblib
 import warnings
-warnings.filterwarnings('ignore')
 import sys
+from sklearn.preprocessing import StandardScaler
+from sklearn.impute import KNNImputer
+from sklearn.model_selection import train_test_split
+
+warnings.filterwarnings('ignore')
 sys.stdout.reconfigure(encoding='utf-8')
 
 
@@ -20,8 +21,6 @@ def load_data(filepath):
     print(f"[OK] Dataset charge : {df.shape[0]} lignes x {df.shape[1]} colonnes")
     return df
 
-
-#  1. SUPPRESSION FEATURES INUTILES 
 
 def drop_useless_features(df):
     cols_to_drop = []
@@ -37,8 +36,6 @@ def drop_useless_features(df):
     return df
 
 
-#  2. PARSING REGISTRATIONDATE 
-
 def parse_registration_date(df):
     if 'RegistrationDate' not in df.columns:
         return df
@@ -53,8 +50,6 @@ def parse_registration_date(df):
     print("[OK] RegistrationDate parsee → RegYear, RegMonth, RegDay, RegWeekday\n")
     return df
 
-
-#  3. TRAITEMENT LASTLOGINIP 
 
 def process_last_login_ip(df):
     if 'LastLoginIP' not in df.columns:
@@ -75,8 +70,6 @@ def process_last_login_ip(df):
     return df
 
 
-#  4. CORRECTION VALEURS ABERRANTES 
-
 def fix_outliers(df):
     if 'SatisfactionScore' in df.columns:
         df['SatisfactionScore'] = df['SatisfactionScore'].replace(-1, np.nan)
@@ -92,8 +85,6 @@ def fix_outliers(df):
     print("[OK] Valeurs aberrantes corrigees\n")
     return df
 
-
-#  5. IMPUTATION VALEURS MANQUANTES 
 
 def impute_missing_values(df):
     # Mediane pour colonnes simples

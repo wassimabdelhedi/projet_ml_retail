@@ -91,7 +91,6 @@ document.addEventListener('DOMContentLoaded', function () {
         // Segmentation
         const profile = interpretations.segment_profile;
         document.getElementById('segmentName').textContent = profile.name;
-        document.getElementById('segmentEmoji').textContent = profile.emoji;
 
         // Dépense
         const spend = predictions.predicted_spend;
@@ -102,7 +101,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Fonction pour afficher les erreurs
     function showError(message) {
-        alert('❌ Erreur: ' + message);
+        alert('Erreur: ' + message);
         resultsContainer.style.display = 'none';
         initialMessage.style.display = 'block';
     }

@@ -1,9 +1,4 @@
-"""
-=============================================================
- Etape 8 - Flask CORRIGE
- Fichier : app/app.py
-=============================================================
-"""
+# Application Flask - app/app.py
 import sys
 import os
 sys.stdout.reconfigure(encoding='utf-8')
@@ -19,37 +14,16 @@ import joblib
 
 app = Flask(__name__)
 
-# ─────────────────────────────────────────────
-# CALCUL AUTOMATIQUE DU VRAI MAPPING CLUSTER
-# ─────────────────────────────────────────────
-
 def compute_cluster_mapping():
-    """
-    Calcule le vrai mapping cluster → nom en utilisant
-    les CENTROIDES du KMeans (dans l'espace normalisé).
-
-    POURQUOI LES CENTROIDES :
-    X_train est normalisé (StandardScaler → moyenne=0, std=1)
-    Les centroides sont stockés dans ce même espace normalisé
-    On peut donc les comparer directement sans charger X_train.
-
-    SCORE RFM = -Recency + Frequency
-    Plus Recency est basse (achat récent) et Frequency est haute
-    (beaucoup d'achats), meilleur est le client.
-
-    Champions  → score RFM le plus élevé
-    Fidèles    → score RFM élevé
-    Potentiels → score RFM moyen
-    Dormants   → score RFM le plus bas
-    """
+    """Calcule le mapping cluster vers nom via centroides."""
     MODELS_DIR     = os.path.join(BASE_DIR, 'models')
     TRAIN_TEST_DIR = os.path.join(BASE_DIR, 'data', 'train_test')
 
     default_mapping = {
-        0: {'name': 'Champions',  'emoji': '🏆'},
-        1: {'name': 'Fidèles',    'emoji': '⭐'},
-        2: {'name': 'Potentiels', 'emoji': '🌱'},
-        3: {'name': 'Dormants',   'emoji': '💤'},
+        0: {'name': 'Champions'},
+        1: {'name': 'Fidèles'},
+        2: {'name': 'Potentiels'},
+        3: {'name': 'Dormants'},
     }
 
     try:
@@ -89,13 +63,11 @@ def compute_cluster_mapping():
                                  reverse=True)
 
         noms   = ['Champions', 'Fidèles', 'Potentiels', 'Dormants']
-        emojis = ['🏆', '⭐', '🌱', '💤']
 
         mapping = {}
         for rang, cluster_id in enumerate(sorted_clusters):
             mapping[cluster_id] = {
                 'name':  noms[rang],
-                'emoji': emojis[rang],
             }
 
         # ── Afficher le mapping calculé ───────────────────────
@@ -105,7 +77,7 @@ def compute_cluster_mapping():
             rec_n   = centroides[cluster_id][idx_rec]
             frq_n   = centroides[cluster_id][idx_frq]
             score   = scores[cluster_id]
-            print(f"  Cluster {cluster_id} → {info['name']} {info['emoji']}"
+            print(f"  Cluster {cluster_id} → {info['name']}"
                   f"  (Recency={rec_n:+.3f}, "
                   f"Freq={frq_n:+.3f}, "
                   f"Score={score:+.3f})")
@@ -165,9 +137,9 @@ def predict():
         spend      = float(results.get('predicted_spend', 0) or 0)
         churn_pct  = round(proba * 100, 1)
 
-        # Mapping corrigé automatiquement (IA Pure)
+        # Mapping corrigé automatiquement
         seg_info = SEGMENTS.get(segment_id, {
-            'name': f'Cluster {segment_id}', 'emoji': '👤'
+            'name': f'Cluster {segment_id}'
         })
 
         # FORMAT EXACT pour main.js
@@ -181,7 +153,6 @@ def predict():
             'interpretations': {
                 'segment_profile': {
                     'name':  seg_info['name'],
-                    'emoji': seg_info['emoji'],
                 },
                 'spend_category': get_spend_category(spend),
             }

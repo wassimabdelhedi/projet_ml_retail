@@ -18,11 +18,9 @@ REPORTS_DIR = os.path.join(BASE_DIR, 'reports')
 os.makedirs(REPORTS_DIR, exist_ok=True)
 
 def run_exploration():
-    print("\n" + "="*60)
-    print("  ÉTAPES D'EXPLORATION ET TRANSFORMATION (ACP)")
-    print("="*60 + "\n")
+    print("\nÉTAPES D'EXPLORATION ET TRANSFORMATION (ACP)\n")
 
-    # 1. Chargement des données
+
     data_path = os.path.join(DATA_DIR, 'data_clean.csv')
     if not os.path.exists(data_path):
         print(f"❌ Erreur: Le fichier {data_path} n'existe pas. Veuillez lancer le preprocessing d'abord.")
@@ -31,7 +29,7 @@ def run_exploration():
     df = pd.read_csv(data_path)
     print(f"✅ Données chargées: {df.shape[0]} lignes, {df.shape[1]} colonnes\n")
 
-    # 2. Matrice de Corrélation (Heatmap)
+
     print("[...] Génération de la Heatmap de corrélation...")
     num_cols = df.select_dtypes(include=['int64', 'float64']).columns.tolist()
     if 'Churn' in num_cols:
@@ -47,7 +45,7 @@ def run_exploration():
     plt.savefig(os.path.join(REPORTS_DIR, 'correlation_heatmap_detailed.png'), dpi=150)
     print("✅ Heatmap sauvegardée: reports/correlation_heatmap_detailed.png\n")
 
-    # 3. Calcul du VIF (Multicolinéarité)
+
     print("[...] Calcul du VIF (Variance Inflation Factor)...")
     # On enlève la cible
     X_vif = df[num_cols].drop(columns=['Churn'], errors='ignore').dropna()
@@ -68,7 +66,7 @@ def run_exploration():
         f.write(vif_data.to_string(index=False))
     print("\n✅ Rapport VIF sauvegardé: reports/vif_report.txt\n")
 
-    # 4. ACP - Analyse en Composantes Principales
+
     print("[...] Analyse en Composantes Principales (ACP)...")
     X = df.drop(columns=['Churn'], errors='ignore').select_dtypes(include=[np.number])
     X_scaled = StandardScaler().fit_transform(X)

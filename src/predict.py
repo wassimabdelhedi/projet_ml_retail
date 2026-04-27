@@ -1,9 +1,4 @@
-"""
-=============================================================
- Etape 7 - Prediction CORRIGEE
- Fichier : src/predict.py
-=============================================================
-"""
+# Inférence - src/predict.py
 import sys
 sys.stdout.reconfigure(encoding='utf-8')
 
@@ -15,10 +10,6 @@ import os
 BASE_DIR   = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODELS_DIR = os.path.join(BASE_DIR, 'models')
 
-
-# ─────────────────────────────────────────────
-# CHARGEMENT DES MODELES
-# ─────────────────────────────────────────────
 
 def load_models():
     models = {}
@@ -35,7 +26,6 @@ def load_models():
         else:
             print(f"[WARN] {filename} non trouve")
 
-    # Régresseur : essayer plusieurs noms
     for filename in ['best_regressor.joblib', 'random_forest_optimized.joblib',
                      'random_forest.joblib', 'linear_regression.joblib']:
         path = os.path.join(MODELS_DIR, filename)
@@ -47,18 +37,9 @@ def load_models():
     return models
 
 
-# ─────────────────────────────────────────────
-# FEATURE ENGINEERING CORRIGE
-# ─────────────────────────────────────────────
-
 def create_training_features(data_dict):
-    """
-    Crée les 70 features exactes du training.
-    CORRECTION : les features clés (Recency, Frequency, Monetary)
-    sont maintenant correctement propagées dans toutes les features dérivées.
-    """
+    """Cree les features pour l'inference."""
 
-    # ── Valeurs de base ──────────────────────────────────────
     recency        = float(data_dict.get('Recency', 30))
     frequency      = float(data_dict.get('Frequency', 5))
     monetary       = float(data_dict.get('MonetaryTotal', 500))

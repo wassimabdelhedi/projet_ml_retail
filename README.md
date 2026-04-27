@@ -2,6 +2,14 @@
 
 Une pipeline de machine learning complète conçue pour analyser et prédire le comportement des clients dans un contexte de commerce de détail et de e-commerce. Ce projet implémente un flux de travail professionnel, de la transformation des données brutes à une application web interactive.
 
+---
+
+### Présentation du Projet
+Retrouvez la présentation complète de ce projet sur Google Slides :
+👉 **[Voir la présentation (Google Slides)](https://docs.google.com/presentation/d/1MCdsJ6XHOSUpo0HBcsJEb-M2zUr79mBT1JH5vYoI6dk/edit?usp=sharing)**
+
+---
+
 ## Table des Matières
 
 - [Vue d'ensemble](#vue-densemble)

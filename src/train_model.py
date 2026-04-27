@@ -1,10 +1,6 @@
-"""
-=============================================================
- Etape 5 - Modelisation
- Fichier : src/train_model.py
- Projet  : Analyse Comportementale Clientele Retail
-=============================================================
-"""
+
+# Modelisation - src/train_model.py
+# Projet : Analyse Comportementale Clientele Retail
 
 import sys
 sys.stdout.reconfigure(encoding='utf-8')
@@ -29,7 +25,7 @@ warnings.filterwarnings('ignore')
 
 plt.style.use('seaborn-v0_8-whitegrid')
 
-# ── Chemins ───────────────────────────────────────────────────
+
 BASE_DIR       = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TRAIN_TEST_DIR = os.path.join(BASE_DIR, 'data', 'train_test')
 PROCESSED      = os.path.join(BASE_DIR, 'data', 'processed', 'data_clean.csv')
@@ -38,10 +34,6 @@ REPORTS_DIR    = os.path.join(BASE_DIR, 'reports')
 os.makedirs(MODELS_DIR,  exist_ok=True)
 os.makedirs(REPORTS_DIR, exist_ok=True)
 
-
-# ─────────────────────────────────────────────
-# CHARGEMENT DES DONNEES
-# ─────────────────────────────────────────────
 
 def load_train_test():
     """Charge les fichiers X_train, X_test, y_train, y_test."""
@@ -54,39 +46,13 @@ def load_train_test():
     return X_train, X_test, y_train, y_test
 
 
-# ═════════════════════════════════════════════
-# A) CLUSTERING (non supervise)
-# ═════════════════════════════════════════════
-
 def run_clustering(X_train, n_clusters=4):
-    """
-    Segmente les clients avec K-Means.
+    """Segmente les clients avec K-Means."""
 
-    PRINCIPE : K-Means regroupe les clients en k groupes
-    de facon a minimiser la distance de chaque client
-    au centre (centroide) de son groupe.
-
-    METHODE DU COUDE :
-    On teste k de 2 a 10 et on trace l'inertie.
-    L'inertie diminue toujours quand k augmente.
-    Le "coude" = le k ou le gain devient faible.
-
-    SILHOUETTE SCORE :
-    Mesure la qualite des clusters.
-    Proche de 1 = clusters bien separes.
-    Proche de 0 = clusters qui se chevauchent.
-    """
-    print("=" * 55)
-    print("  A) CLUSTERING K-MEANS")
-    print("=" * 55 + "\n")
-
-    # ── Normalisation pour le clustering ───────────────────────
-    # KMeans est sensible aux échelles. On utilise le scaler global.
     try:
         scaler_path = os.path.join(MODELS_DIR, 'scaler.joblib')
         if os.path.exists(scaler_path):
             scaler = joblib.load(scaler_path)
-            # S'assurer que les colonnes matchent
             cols_scaler = list(scaler.feature_names_in_)
             X_train_sc = X_train[cols_scaler]
             X_train_sc = scaler.transform(X_train_sc)
@@ -98,7 +64,6 @@ def run_clustering(X_train, n_clusters=4):
         print(f"[WARN] Erreur lors de la normalisation : {e}")
         X_train_sc = X_train
 
-    # ── Methode du coude ──────────────────────────────────────
     print("[...] Methode du coude (k = 2 a 10)...")
     inertias    = []
     sil_scores  = []
@@ -110,14 +75,11 @@ def run_clustering(X_train, n_clusters=4):
         inertias.append(km.inertia_)
         sil_scores.append(silhouette_score(X_train_sc, km.labels_))
 
-    # Affichage
     print(f"\n  {'k':<5} {'Inertie':>12}  {'Silhouette':>12}")
-    print("  " + "-" * 35)
     for k, iner, sil in zip(k_range, inertias, sil_scores):
         marker = " <-- optimal" if k == n_clusters else ""
         print(f"  {k:<5} {iner:>12.1f}  {sil:>12.4f}{marker}")
 
-    # ── Graphiques ────────────────────────────────────────────
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
 
     axes[0].plot(k_range, inertias, 'bo-', linewidth=2, markersize=8)
@@ -141,7 +103,6 @@ def run_clustering(X_train, n_clusters=4):
     plt.savefig(os.path.join(REPORTS_DIR, 'clustering_elbow.png'), dpi=150, bbox_inches='tight')
     plt.show()
 
-    # ── KMeans final ──────────────────────────────────────────
     print(f"\n[...] KMeans final avec k={n_clusters}...")
     kmeans   = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
     clusters = kmeans.fit_predict(X_train_sc)
@@ -149,7 +110,6 @@ def run_clustering(X_train, n_clusters=4):
     sil_final = silhouette_score(X_train_sc, clusters)
     print(f"  Silhouette Score final : {sil_final:.4f}")
 
-    # ── Interpretation des clusters ───────────────────────────
     df_cluster = X_train.copy()
     df_cluster['Cluster'] = clusters
 
@@ -159,27 +119,21 @@ def run_clustering(X_train, n_clusters=4):
         pct = n / len(clusters) * 100
         print(f"    Cluster {i} : {n} clients ({pct:.1f}%)")
 
-    # Profil moyen par cluster (top features)
     key_features = [c for c in ['Recency', 'Frequency', 'MonetaryTotal',
                                   'Age', 'SatisfactionScore'] if c in X_train.columns]
     if key_features:
-        print(f"\n  Profil moyen par cluster (features cles) :")
+        print(f"\n  Profil moyen par cluster :")
         profile = df_cluster.groupby('Cluster')[key_features].mean().round(3)
         print(profile.to_string())
 
-    # Sauvegarde du modele
     joblib.dump(kmeans, os.path.join(MODELS_DIR, 'kmeans.joblib'))
     print(f"\n[OK] KMeans sauvegarde : models/kmeans.joblib\n")
 
     return kmeans, clusters
 
 
-# ═════════════════════════════════════════════
-# B) CLASSIFICATION — Predire Churn
-# ═════════════════════════════════════════════
-
 def evaluate_classifier(name, model, X_test, y_test):
-    """Evalue un modele de classification et affiche les metriques."""
+    """Evalue un modele de classification."""
     y_pred  = model.predict(X_test)
     y_proba = model.predict_proba(X_test)[:, 1] if hasattr(model, 'predict_proba') else None
 
@@ -187,7 +141,7 @@ def evaluate_classifier(name, model, X_test, y_test):
     auc = roc_auc_score(y_test, y_proba) if y_proba is not None else None
     report = classification_report(y_test, y_pred, output_dict=True)
 
-    print(f"\n  --- {name} ---")
+    print(f"\n  {name}")
     print(f"  Accuracy  : {acc:.4f}")
     print(f"  AUC-ROC   : {auc:.4f}" if auc else "  AUC-ROC   : N/A")
     print(f"  Precision : {report['1']['precision']:.4f}")
@@ -205,14 +159,13 @@ def evaluate_classifier(name, model, X_test, y_test):
 
 
 def plot_classification_results(results, X_test, y_test):
-    """Trace les graphiques de comparaison des modeles de classification."""
+    """Trace les graphiques de comparaison."""
 
     fig, axes = plt.subplots(2, 3, figsize=(20, 12))
     axes = axes.flatten()
 
     colors = ['#3498db', '#2ecc71', '#e74c3c']
 
-    # ── Graphique 1 : Comparaison des metriques ───────────────
     metrics = ['accuracy', 'auc', 'precision', 'recall', 'f1']
     labels  = ['Accuracy', 'AUC-ROC', 'Precision', 'Recall', 'F1']
     x       = np.arange(len(metrics))
@@ -230,7 +183,6 @@ def plot_classification_results(results, X_test, y_test):
     axes[0].legend()
     axes[0].axhline(y=0.8, color='red', linestyle='--', alpha=0.5, label='Seuil 0.8')
 
-    # ── Graphiques 2-4 : Matrices de confusion ─────────────────
     for i, res in enumerate(results):
         cm = confusion_matrix(y_test, res['y_pred'])
         sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
@@ -241,7 +193,6 @@ def plot_classification_results(results, X_test, y_test):
         axes[i+1].set_ylabel('Reel')
         axes[i+1].set_xlabel('Predit')
 
-    # ── Graphique 5 : Courbes ROC ─────────────────────────────
     for i, res in enumerate(results):
         if res['y_proba'] is not None:
             fpr, tpr, _ = roc_curve(y_test, res['y_proba'])
@@ -254,11 +205,9 @@ def plot_classification_results(results, X_test, y_test):
     axes[4].set_title('Courbes ROC', fontweight='bold')
     axes[4].legend(fontsize=9)
 
-    # ── Graphique 6 : Feature Importance (Random Forest) ──────
     rf_res = next((r for r in results if 'Forest' in r['name']), None)
     if rf_res and hasattr(rf_res['model'], 'feature_importances_'):
         importances = rf_res['model'].feature_importances_
-        # Top 15 features
         indices = np.argsort(importances)[::-1][:15]
         
         feature_names = list(X_test.columns)
@@ -388,10 +337,6 @@ def run_classification(X_train, X_test, y_train, y_test):
     return results, best
 
 
-# ═════════════════════════════════════════════
-# C) REGRESSION — Predire MonetaryTotal
-# ═════════════════════════════════════════════
-
 def evaluate_regressor(name, model, X_test, y_test):
     """Evalue un modele de regression et affiche les metriques."""
     y_pred = model.predict(X_test)
@@ -401,10 +346,8 @@ def evaluate_regressor(name, model, X_test, y_test):
     rmse = np.sqrt(mse)
     r2   = r2_score(y_test, y_pred)
 
-    print(f"\n  --- {name} ---")
-    print(f"  MAE  (erreur absolue moyenne)  : {mae:.2f} £")
-    print(f"  RMSE (racine erreur quadratique): {rmse:.2f} £")
-    print(f"  R²   (variance expliquee)       : {r2:.4f}")
+    print(f"\n  {name}")
+    print(f"  R2          : {r2:.4f}")
 
     return {
         'name': name, 'model': model,
@@ -425,18 +368,14 @@ def plot_regression_results(results, y_test):
     for i, res in enumerate(results):
         y_pred = res['y_pred']
 
-        # Graphique 1 : Reel vs Predit
         axes[0][i].scatter(y_test, y_pred, alpha=0.3, s=15, color=colors[i])
         min_val = min(y_test.min(), y_pred.min())
         max_val = max(y_test.max(), y_pred.max())
-        axes[0][i].plot([min_val, max_val], [min_val, max_val],
-                        'r--', linewidth=2, label='Prediction parfaite')
+        axes[0][i].plot([min_val, max_val], [min_val, max_val], 'r--', linewidth=2)
         axes[0][i].set_xlabel('Valeur Reelle (£)')
         axes[0][i].set_ylabel('Valeur Predite (£)')
         axes[0][i].set_title(f'{res["name"]}\nR²={res["r2"]:.4f}', fontweight='bold')
-        axes[0][i].legend()
 
-        # Graphique 2 : Distribution des residus
         residus = y_test.values - y_pred
         axes[1][i].hist(residus, bins=50, color=colors[i], alpha=0.7, edgecolor='white')
         axes[1][i].axvline(x=0, color='red', linestyle='--', linewidth=2)
@@ -444,8 +383,7 @@ def plot_regression_results(results, y_test):
         axes[1][i].set_ylabel('Frequence')
         axes[1][i].set_title(f'Distribution des residus — {res["name"]}', fontweight='bold')
 
-    plt.suptitle('Resultats Regression — Prediction MonetaryTotal',
-                 fontsize=14, fontweight='bold')
+    plt.suptitle('Resultats Regression — Prediction MonetaryTotal', fontsize=14, fontweight='bold')
     plt.tight_layout()
     plt.savefig(os.path.join(REPORTS_DIR, 'regression_results.png'),
                 dpi=150, bbox_inches='tight')
@@ -453,44 +391,14 @@ def plot_regression_results(results, y_test):
 
 
 def run_regression(X_train, X_test, y_train, y_test):
-    """
-    Entraine 2 modeles de regression pour predire MonetaryTotal.
+    """Entraine les modeles de regression pour predire MonetaryTotal."""
 
-    MODELES :
-    1. Regression Lineaire  : suppose une relation lineaire entre X et y
-    2. Random Forest Regressor : capture les relations non lineaires
-
-    METRIQUES :
-    - MAE  : erreur moyenne en livres sterling (comprehensible)
-    - RMSE : penalise plus les grandes erreurs que le MAE
-    - R²   : proportion de variance expliquee (1 = parfait, 0 = nul)
-    """
-    print("=" * 55)
-    print("  C) REGRESSION — PREDICTION MONETARYTOTAL")
-    print("=" * 55 + "\n")
-
-    # Charger le dataset pour recuperer MonetaryTotal
     df_full = pd.read_csv(PROCESSED)
 
     if 'MonetaryTotal' not in df_full.columns:
-        print("  [WARN] MonetaryTotal absent du dataset. Regression ignoree.")
+        print("  [WARN] MonetaryTotal absent.")
         return [], None
 
-    # Aligner les indices avec X_train / X_test
-    y_reg_train = df_full.loc[X_train.index, 'MonetaryTotal'] \
-        if len(df_full) == len(X_train) + len(X_test) \
-        else df_full['MonetaryTotal'].iloc[:len(X_train)]
-
-    # Reconstruction propre
-    df_full = df_full.reset_index(drop=True)
-    train_idx = X_train.index if hasattr(X_train, 'index') else range(len(X_train))
-    test_idx  = X_test.index  if hasattr(X_test,  'index') else range(len(X_test))
-
-    # Target regression : MonetaryTotal
-    target_reg = df_full['MonetaryTotal']
-
-    # Re-split pour regression
-    from sklearn.model_selection import train_test_split
     X_r = df_full.drop(columns=['MonetaryTotal', 'Churn'], errors='ignore')
     X_r = X_r.select_dtypes(include=['int64', 'float64']).fillna(0)
     y_r = df_full['MonetaryTotal']
@@ -499,7 +407,6 @@ def run_regression(X_train, X_test, y_train, y_test):
         X_r, y_r, test_size=0.2, random_state=42
     )
 
-    # Normalisation
     scaler_reg = StandardScaler()
     X_r_train_sc = scaler_reg.fit_transform(X_r_train)
     X_r_test_sc  = scaler_reg.transform(X_r_test)
@@ -507,91 +414,52 @@ def run_regression(X_train, X_test, y_train, y_test):
 
     results = []
 
-    # ── 1. Regression Lineaire ────────────────────────────────
     print("[...] Entrainement Regression Lineaire...")
     lr = LinearRegression()
     lr.fit(X_r_train_sc, y_r_train)
-    results.append(evaluate_regressor('Reg. Lineaire', lr,
-                                       X_r_test_sc, y_r_test))
+    results.append(evaluate_regressor('Reg. Lineaire', lr, X_r_test_sc, y_r_test))
     joblib.dump(lr, os.path.join(MODELS_DIR, 'linear_regression.joblib'))
 
-    # ── 2. Random Forest Regressor (OPTIMISÉ étape 6) ────────────────────────────
-    print("\n[...] Optimisation Random Forest Regressor (GridSearch)...")
-
+    print("\n[...] Optimisation Random Forest Regressor...")
     param_grid = {
-    'n_estimators': [100, 200],
-    'max_depth': [None, 10, 20],
-    'min_samples_split': [2, 5],
-}
-
-    rf_base = RandomForestRegressor(
-    random_state=42,
-    n_jobs=-1
-    ) 
-
-    grid_rf = GridSearchCV(
-     rf_base,
-     param_grid,
-     cv=3,
-     scoring='r2',
-     n_jobs=-1,
-     verbose=1
-    )
-
+        'n_estimators': [100, 200],
+        'max_depth': [None, 10, 20],
+        'min_samples_split': [2, 5],
+    }
+    grid_rf = GridSearchCV(RandomForestRegressor(random_state=42, n_jobs=-1), param_grid, cv=3, scoring='r2', n_jobs=-1, verbose=0)
     grid_rf.fit(X_r_train_sc, y_r_train)
-
     rf = grid_rf.best_estimator_
-
     print(f"  Meilleurs params RF : {grid_rf.best_params_}")
-
     results.append(evaluate_regressor('Random Forest (opt)', rf, X_r_test_sc, y_r_test))
-
     joblib.dump(rf, os.path.join(MODELS_DIR, 'random_forest_optimized.joblib'))
     
 
-    # ── Meilleur modele ───────────────────────────────────────
     best = max(results, key=lambda r: r['r2'])
     print(f"\n  Meilleur modele (R²) : {best['name']} → {best['r2']:.4f}")
     joblib.dump(best['model'], os.path.join(MODELS_DIR, 'best_regressor.joblib'))
 
-    # ── Graphiques ────────────────────────────────────────────
     plot_regression_results(results, y_r_test)
 
     print(f"\n[OK] Regression terminee\n")
     return results, best
 
 
-# ═════════════════════════════════════════════
-# PIPELINE PRINCIPAL
-# ═════════════════════════════════════════════
-
 def run_all_models():
-    """Lance les 3 types de modelisation dans l'ordre."""
+    """Lance la pipeline complete de modelisation."""
 
-    print("\n" + "=" * 55)
-    print("  ETAPE 5 - MODELISATION - DEBUT")
-    print("=" * 55 + "\n")
-
-    # Chargement
     X_train, X_test, y_train, y_test = load_train_test()
 
-    # A) Clustering
     kmeans, clusters = run_clustering(X_train, n_clusters=4)
 
-    # B) Classification
     clf_results, best_clf = run_classification(
         X_train, X_test, y_train, y_test
     )
 
-    # C) Regression
     reg_results, best_reg = run_regression(
         X_train, X_test, y_train, y_test
     )
 
-    # ── Recap final ───────────────────────────────────────────
-    print("\n" + "=" * 55)
-    print("  RECAP FINAL")
-    print("=" * 55)
+    print("\nRECAP FINAL")
     print(f"\n  [CLUSTERING]")
     print(f"    Modele    : KMeans k=4")
     print(f"    Sauvegarde: models/kmeans.joblib")
